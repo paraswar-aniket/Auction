@@ -99,3 +99,49 @@ export const register = catchAsyncErrors(async (req,res,next) => {
     });
     generateToken(user,"User Registered",201,res); 
 })
+
+export const login =   catchAsyncErrors(async (req,res,next) => {
+    const {email,password} = req.body;
+    if(!email | !password){
+        return new ErrorHandler("Enter email and passoword");
+    }
+
+    const user = await User.findOne({ email: email}).select("+password");
+
+    if(!user){
+        return next(new ErrorHandler("Invalid email",400));
+    }
+
+    const isPasswordMatch = user.comparePassword(password);
+
+    if(!isPasswordMatch)
+        return next(new ErrorHandler("Invalid password",400));
+
+    generateToken(user,"Log in Successfully",200,res);
+
+
+}) 
+
+export const logout =   catchAsyncErrors(async (req,res,next) => {
+    res.status(200)
+    .cookie("token","",{
+        expires : new Date(Date.now()),
+        httpOnly : true
+    })
+    .json({
+        success: true,
+        message: "User logged out successfully"
+    })
+})
+
+export const getProfile =   catchAsyncErrors(async (req,res,next) => {
+    const user = req.user;
+    res.status(200).json({
+        success: true,
+        user
+    })
+})
+
+export const fetchLeaderboard =   catchAsyncErrors(async (req,res,next) => {
+    
+})
